@@ -11,15 +11,16 @@ class Settings(BaseSettings):
     # PROJECT NAME, API PREFIX, CORS ORIGINS
     PROJECT_NAME: str = "Just a project name, appears in OpenAPI docs"
     API_STR: str = ""
-    BACKEND_CORS_ORIGINS: Union[str, List[AnyHttpUrl]] = \
-        "http://localhost:3000,http://localhost:8000"
+    BACKEND_CORS_ORIGINS: Union[
+        str, List[AnyHttpUrl]
+    ] = "http://localhost:3000,http://localhost:8000"
 
     POSTGRES_USER: str = "postgres"
     POSTGRES_PASSWORD: str = "super_secret_db_password"
     POSTGRES_SERVER: str = "localhost"
     POSTGRES_PORT: str = "5432"
     POSTGRES_DB: str = "db"
-    SQLALCHEMY_DATABASE_URI: Optional[str] = None
+    SQLALCHEMY_DATABASE_URI: Optional[str] = "sqlite://db.sqlite3"
     # Above (see validators) -> postgresql://user:secret@localhost:5432/db
 
     # FIRST SUPERUSER

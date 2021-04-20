@@ -1,0 +1,7 @@
+install fastapi
+install tortoise
+pip install tortoise-orm[asyncpg]
+pip install pydantic[dotenv]
+pip install python-jose[cryptography]
+pip install passlib
+pip install uvicorn
