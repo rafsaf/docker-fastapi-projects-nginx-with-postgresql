@@ -2,7 +2,9 @@ FROM nginx/unit:1.23.0-python3.9
 
 # Our Debian with Python and Nginx for python apps.
 # See https://hub.docker.com/r/nginx/unit/
+ENV PYTHONUNBUFFERED 1
 
+COPY ./app/initial.sh /docker-entrypoint.d/initial.sh
 COPY ./config/config.json /docker-entrypoint.d/config.json
 
 # Ok, this is something we get thanks to the Nginx Unit Image.
@@ -19,14 +21,16 @@ COPY ./config/config.json /docker-entrypoint.d/config.json
 RUN mkdir build
 
 # We create folder named build for our app.
+WORKDIR /build
 
-COPY ./app /build/app
-COPY ./requirements.txt /build/requirements.txt
+COPY ./app ./app
+COPY ./requirements.txt .
+COPY ./.env .
 
 # We copy our app folder to the /build
 
 RUN apt update && apt install -y python3-pip                                  \
-    && pip3 install -r build/requirements.txt                                       \
+    && pip3 install -r requirements.txt                                       \
     && apt remove -y python3-pip                                              \
     && apt autoremove --purge -y                                              \
     && rm -rf /var/lib/apt/lists/* /etc/apt/sources.list.d/*.list
@@ -38,7 +42,3 @@ RUN apt update && apt install -y python3-pip                                  \
 # Next, we install the requirements, remove PIP, and perform image cleanup. """
 
 # Note we use /build/requirements.txt since this is our file
-
-EXPOSE 80
-
-# Instruction informs Docker that the container listens on port 80

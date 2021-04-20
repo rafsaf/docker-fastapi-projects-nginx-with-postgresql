@@ -1,0 +1,1 @@
+python /build/app/initial_data.py
