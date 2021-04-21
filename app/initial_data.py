@@ -1,10 +1,8 @@
 import logging
 from tortoise import run_async
-from tortoise import Tortoise
 
 try:
     from app.db.init_db import init_db
-    from app.core.config import settings
 except ModuleNotFoundError:
     import sys
     import os
@@ -13,7 +11,6 @@ except ModuleNotFoundError:
     app = pathlib.Path(os.path.dirname(__file__)).parent
     sys.path.append(str(app))
     from app.db.init_db import init_db
-    from app.core.config import settings
 
 
 logging.basicConfig(level=logging.INFO)

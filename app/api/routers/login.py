@@ -1,3 +1,4 @@
+from app.schemas.user import UserPydantic
 from datetime import timedelta
 from typing import Any
 
@@ -19,7 +20,9 @@ async def login_access_token(form_data: OAuth2PasswordRequestForm = Depends()) -
     OAuth2 compatible token login, get an access token for future requests
     """
 
-    user = crud.user.authenticate(email=form_data.username, password=form_data.password)
+    user = await crud.user.authenticate(
+        email=form_data.username, password=form_data.password
+    )
     if not user:
         raise HTTPException(status_code=400, detail="Incorrect email or password")
     elif not crud.user.is_active(user):
@@ -33,9 +36,9 @@ async def login_access_token(form_data: OAuth2PasswordRequestForm = Depends()) -
     }
 
 
-@router.post("/test-token", response_model=schemas.User)
+@router.post("/test-token", response_model=schemas.UserPydantic)
 async def test_token(current_user: models.User = Depends(deps.get_current_user)) -> Any:
     """
     Test access token
     """
-    return await current_user
+    return UserPydantic.from_orm(current_user)

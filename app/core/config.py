@@ -1,11 +1,10 @@
-import secrets
 from typing import Dict, List, Optional, Union
 from pydantic import AnyHttpUrl, BaseSettings, AnyUrl, validator, EmailStr
 
 
 class Settings(BaseSettings):
     # SECURITY
-    SECRET_KEY: str = secrets.token_urlsafe()
+    SECRET_KEY: str = "super_secret_secret_key"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8
 
     # PROJECT NAME, API PREFIX, CORS ORIGINS
@@ -21,7 +20,8 @@ class Settings(BaseSettings):
     POSTGRES_PORT: str = "5432"
     POSTGRES_DB: str = "db"
     SQLALCHEMY_DATABASE_URI: Optional[str] = "sqlite://db.sqlite3"
-    # Above (see validators) -> postgresql://user:secret@localhost:5432/db
+    # set it to None to stop using sqlite and calculate uri from postgres data
+    # (see URI validator) -> postgresql://user:password@localhost:5432/db etc.
 
     # FIRST SUPERUSER
     FIRST_SUPERUSER_EMAIL: EmailStr = "example@example.com"  # type: ignore

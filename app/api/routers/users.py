@@ -1,16 +1,14 @@
+from app.schemas.user import UserPydanticList
 from typing import Any, List
-
-from fastapi import APIRouter, Body, Depends, HTTPException
-from fastapi.encoders import jsonable_encoder
-from pydantic.networks import EmailStr
-
+from fastapi import APIRouter, Depends, HTTPException
 from app import crud, models, schemas
+from app.schemas import UserPydantic
 from app.api import deps
 
 router = APIRouter()
 
 
-@router.get("/", response_model=List[schemas.User])
+@router.get("/", response_model=UserPydanticList)
 async def read_users(
     skip: int = 0,
     limit: int = 100,
@@ -20,12 +18,12 @@ async def read_users(
     Retrieve users.
     """
     users = await crud.user.get_multi(skip=skip, limit=limit)
-    return users
+    return await UserPydanticList.from_queryset(users)
 
 
-@router.post("/", response_model=schemas.User)
+@router.post("/", response_model=UserPydantic)
 async def create_user(
-    user_in: schemas.UserCreate,
+    user_in: schemas.UserCreateBySuperuser,
     current_user: models.User = Depends(deps.get_current_active_superuser),
 ) -> Any:
     """
@@ -37,63 +35,48 @@ async def create_user(
             status_code=400,
             detail="The user with this username already exists in the system.",
         )
-    user = await crud.user.create(obj_in=user_in)
-    return user
+    user = await crud.user.create_by_superuser(obj_in=user_in)
+    return UserPydantic.from_orm(user)
 
 
-@router.put("/me", response_model=schemas.User)
+@router.put("/me", response_model=UserPydantic)
 async def update_user_me(
-    password: str = Body(None),
-    full_name: str = Body(None),
-    email: EmailStr = Body(None),
+    user_in: schemas.UserUpdateMe,
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Update own user.
     """
-    current_user_data = jsonable_encoder(current_user)
-    user_in = schemas.UserUpdate(**current_user_data)
-    if password is not None:
-        user_in.password = password
-    if full_name is not None:
-        user_in.full_name = full_name
-    if email is not None:
-        user_in.email = email
-    user = await crud.user.update(db_obj=current_user, obj_in=user_in)
-    return user
+    user = await crud.user.update_me(db_obj=current_user, obj_in=user_in)
+    return schemas.UserPydantic.from_orm(user)
 
 
-@router.get("/me", response_model=schemas.User)
+@router.get("/me", response_model=UserPydantic)
 async def read_user_me(
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Get current user.
     """
-    return await current_user
+    return UserPydantic.from_orm(current_user)
 
 
-@router.post("/open", response_model=schemas.User)
-async def create_user_open(
-    password: str = Body(...),
-    email: EmailStr = Body(...),
-    full_name: str = Body(None),
-) -> Any:
+@router.post("/open", response_model=UserPydantic)
+async def create_user_open(user_in: schemas.UserCreateMe):
     """
     Create new user without the need to be logged in.
     """
-    user = await crud.user.get_by_email(email=email)
+    user = await crud.user.get_by_email(email=user_in.email)
     if user:
         raise HTTPException(
             status_code=400,
             detail="The user with this username already exists in the system",
         )
-    user_in = schemas.UserCreate(password=password, email=email, full_name=full_name)
-    user = await crud.user.create_one(obj_in=user_in)
-    return user
+    user = await crud.user.create_me(obj_in=user_in)
+    return UserPydantic.from_orm(user)
 
 
-@router.get("/{user_id}", response_model=schemas.User)
+@router.get("/{user_id}", response_model=UserPydantic)
 async def read_user_by_id(
     user_id: int,
     current_user: models.User = Depends(deps.get_current_active_user),
@@ -108,23 +91,23 @@ async def read_user_by_id(
         raise HTTPException(
             status_code=400, detail="The user doesn't have enough privileges"
         )
-    return user
+    return UserPydantic.from_orm(user)
 
 
-@router.put("/{user_id}", response_model=schemas.User)
+@router.put("/{user_id}", response_model=UserPydantic)
 async def update_user(
     user_id: int,
-    user_in: schemas.UserUpdate,
+    user_in: schemas.UserUpdateBySuperuser,
     current_user: models.User = Depends(deps.get_current_active_superuser),
 ) -> Any:
     """
     Update a user.
     """
-    user = await crud.user.get_one(id=user_id)
+    user = await crud.user.get(id=user_id)
     if not user:
         raise HTTPException(
             status_code=404,
             detail="The user with this username does not exist in the system",
         )
-    user = await crud.user.update_one(db_obj=user, obj_in=user_in)
-    return user
+    user = await crud.user.update_by_superuser(db_obj=user, obj_in=user_in)
+    return UserPydantic.from_orm(user)

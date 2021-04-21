@@ -1,13 +1,14 @@
-from typing import Any, Dict, Optional, Union
+from app.schemas.user import UserCreateBySuperuser, UserUpdateBySuperuser
+from typing import Optional
 
 from app.core.security import get_password_hash, verify_password
 from app.crud.base import CRUDBase
 from app.models import User
-from app.schemas.user import UserCreate, UserUpdate
+from app.schemas import UserCreateMe, UserUpdateMe
 from tortoise.exceptions import DoesNotExist
 
 
-class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
+class CRUDUser(CRUDBase[User, UserCreateMe, UserUpdateMe]):
     async def get_by_email(self, email: str) -> Optional[User]:
         try:
             user = await User.get(email=email)
@@ -16,43 +17,62 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
         else:
             return user
 
-    async def create(self, obj_in: UserCreate) -> User:
-
-        db_obj = User(
+    async def create_me(self, obj_in: UserCreateMe) -> User:
+        db_obj = await User.create(
             email=obj_in.email,
-            hashed_password=get_password_hash(obj_in.password),
-            is_superuser=obj_in.is_superuser,
+            password_hash=get_password_hash(obj_in.password),
         )
-        await db_obj.save()
         return db_obj
 
-    async def update(
-        self, db_obj: User, obj_in: Union[UserUpdate, Dict[str, Any]]
+    async def create_by_superuser(self, obj_in: UserCreateBySuperuser) -> User:
+
+        db_obj = await User.create(
+            email=obj_in.email,
+            password_hash=get_password_hash(obj_in.password),
+            is_superuser=obj_in.is_superuser,
+        )
+        return db_obj
+
+    async def update_me(self, db_obj: User, obj_in: UserUpdateMe) -> User:
+        db_obj.name = obj_in.name
+        db_obj.family_name = obj_in.family_name
+        if obj_in.password:
+            new_password = get_password_hash(obj_in.password)
+            db_obj.password_hash = new_password
+        await db_obj.save()
+        await db_obj.refresh_from_db()
+        return db_obj
+
+    async def update_by_superuser(
+        self, db_obj: User, obj_in: UserUpdateBySuperuser
     ) -> User:
-        if isinstance(obj_in, dict):
-            update_data = obj_in
-        else:
-            update_data = obj_in.dict(exclude_unset=True)
-        if update_data["password"]:
-            hashed_password = get_password_hash(update_data["password"])
-            del update_data["password"]
-            update_data["hashed_password"] = hashed_password
-        user = await super().update_one(db_obj=db_obj, obj_in=update_data)
-        return user
+
+        db_obj.name = obj_in.name
+        db_obj.family_name = obj_in.family_name
+        if obj_in.password:
+            new_password = get_password_hash(obj_in.password)
+            db_obj.password_hash = new_password
+        if obj_in.is_superuser:
+            db_obj.is_superuser = obj_in.is_superuser  # type: ignore
+        if obj_in.is_active:
+            db_obj.is_active = obj_in.is_active  # type: ignore
+        await db_obj.save()
+        await db_obj.refresh_from_db()
+        return db_obj
 
     async def authenticate(self, email: str, password: str) -> Optional[User]:
         user = await self.get_by_email(email=email)
         if not user:
             return None
-        if not verify_password(password, user.hashed_password):
+        if not verify_password(password, user.password_hash):
             return None
         return user
 
     def is_active(self, user: User) -> bool:
-        return user.is_active
+        return user.is_active  # type: ignore
 
     def is_superuser(self, user: User) -> bool:
-        return user.is_superuser
+        return user.is_superuser  # type: ignore
 
 
 user = CRUDUser(User)

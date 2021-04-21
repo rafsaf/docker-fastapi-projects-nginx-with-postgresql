@@ -1,39 +1,41 @@
 from typing import Optional
-
+from tortoise.contrib.pydantic.creator import (
+    pydantic_model_creator,
+    pydantic_queryset_creator,
+)
 from pydantic import BaseModel, EmailStr
+from app.models import User
+
+UserPydantic = pydantic_model_creator(User)
+UserPydanticList = pydantic_queryset_creator(User)
 
 
-# Shared properties
-class UserBase(BaseModel):
-    email: Optional[EmailStr] = None
-    is_active: Optional[bool] = True
-    is_superuser: bool = False
-    full_name: Optional[str] = None
-
-
-# Properties to receive via API on creation
-class UserCreate(UserBase):
+class UserCreateMe(BaseModel):
     email: EmailStr
     password: str
-
-
-# Properties to receive via API on update
-class UserUpdate(UserBase):
-    password: Optional[str] = None
-
-
-class UserInDBBase(UserBase):
-    id: Optional[int] = None
 
     class Config:
         orm_mode = True
 
 
-# Additional properties to return via API
-class User(UserInDBBase):
-    pass
+class UserUpdateMe(BaseModel):
+    password: Optional[str]
+    name: Optional[str]
+    family_name: Optional[str]
+
+    class Config:
+        orm_mode = True
 
 
-# Additional properties stored in DB
-class UserInDB(UserInDBBase):
-    hashed_password: str
+class UserCreateBySuperuser(BaseModel):
+    email: EmailStr
+    password: str
+    is_superuser: Optional[bool]
+    is_active: Optional[bool]
+
+
+class UserUpdateBySuperuser(UserCreateBySuperuser):
+    email: Optional[EmailStr]
+    password: Optional[str]
+    name: Optional[str]
+    family_name: Optional[str]

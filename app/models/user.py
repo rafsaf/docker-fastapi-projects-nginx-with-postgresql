@@ -1,6 +1,6 @@
+from typing import Optional
 import tortoise.fields.data as fields
 from tortoise.models import Model
-from tortoise.contrib.pydantic import pydantic_model_creator
 
 
 class User(Model):
@@ -8,11 +8,13 @@ class User(Model):
     The User model
     """
 
-    id = fields.IntField(pk=True)
-    email = fields.CharField(max_length=50, unique=True)
-    name = fields.CharField(max_length=50, null=True)
-    family_name = fields.CharField(max_length=50, null=True)
-    password_hash = fields.CharField(max_length=128, null=True)
+    id: int = fields.IntField(pk=True)
+    email: str = fields.CharField(max_length=50, unique=True)
+    name: Optional[str] = fields.CharField(max_length=50, null=True, default=None)
+    family_name: Optional[str] = fields.CharField(
+        max_length=50, null=True, default=None
+    )
+    password_hash: str = fields.CharField(max_length=128)
     created_at = fields.DatetimeField(auto_now_add=True)
     modified_at = fields.DatetimeField(auto_now=True)
     is_active = fields.BooleanField(default=True)
@@ -29,7 +31,3 @@ class User(Model):
     class PydanticMeta:
         computed = ["full_name"]
         exclude = ["password_hash"]
-
-
-User_Pydantic = pydantic_model_creator(User, name="User")
-UserIn_Pydantic = pydantic_model_creator(User, name="UserIn", exclude_readonly=True)
