@@ -53,10 +53,9 @@ class CRUDUser(CRUDBase[User, UserCreateMe, UserUpdateMe]):
         if obj_in.password:
             new_password = get_password_hash(obj_in.password)
             db_obj.password_hash = new_password
-        if obj_in.is_superuser:
-            db_obj.is_superuser = obj_in.is_superuser  # type: ignore
-        if obj_in.is_active:
-            db_obj.is_active = obj_in.is_active  # type: ignore
+        db_obj.is_superuser = obj_in.is_superuser  # type: ignore
+
+        db_obj.is_active = obj_in.is_active  # type: ignore
         await db_obj.save()
         await db_obj.refresh_from_db()
         return db_obj

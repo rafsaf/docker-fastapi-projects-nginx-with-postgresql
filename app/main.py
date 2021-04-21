@@ -11,7 +11,7 @@ app = FastAPI(
 register_tortoise(
     app=app,
     db_url=settings.SQLALCHEMY_DATABASE_URI,
-    modules={"models": ["app.models.user"]},
+    modules={"models": ["app.models"]},
     add_exception_handlers=True,
 )
 

@@ -19,7 +19,7 @@ class Settings(BaseSettings):
     POSTGRES_SERVER: str = "localhost"
     POSTGRES_PORT: str = "5432"
     POSTGRES_DB: str = "db"
-    SQLALCHEMY_DATABASE_URI: Optional[str] = "sqlite://db.sqlite3"
+    SQLALCHEMY_DATABASE_URI: Optional[str] = None  # "sqlite://db.sqlite3"
     # set it to None to stop using sqlite and calculate uri from postgres data
     # (see URI validator) -> postgresql://user:password@localhost:5432/db etc.
 
@@ -42,7 +42,7 @@ class Settings(BaseSettings):
         if isinstance(v, str):
             return v
         return AnyUrl.build(
-            scheme="postgresql",
+            scheme="postgres",
             user=values.get("POSTGRES_USER"),
             password=values.get("POSTGRES_PASSWORD"),
             host=values.get("POSTGRES_SERVER") or "localhost",

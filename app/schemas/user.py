@@ -30,8 +30,8 @@ class UserUpdateMe(BaseModel):
 class UserCreateBySuperuser(BaseModel):
     email: EmailStr
     password: str
-    is_superuser: Optional[bool]
-    is_active: Optional[bool]
+    is_superuser: Optional[bool] = False
+    is_active: Optional[bool] = True
 
 
 class UserUpdateBySuperuser(UserCreateBySuperuser):

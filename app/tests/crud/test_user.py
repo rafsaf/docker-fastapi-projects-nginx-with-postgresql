@@ -1,4 +1,4 @@
-from app.schemas.user import UserUpdateMe
+from app.schemas.user import UserUpdateBySuperuser, UserUpdateMe
 from asyncio import AbstractEventLoop as EventLoop, events
 from fastapi.testclient import TestClient
 from app.models import User
@@ -6,6 +6,10 @@ from app import crud
 from app.schemas import UserCreateMe, UserCreateBySuperuser, UserPydantic
 from app.tests.utils.utils import random_email, random_lower_string
 from app.core.security import verify_password
+import logging
+import time
+
+logger = logging.getLogger(__name__)
 
 
 def test_user_create_me(client: TestClient, event_loop: EventLoop):
@@ -31,22 +35,15 @@ def test_user_create_by_superuser(client: TestClient, event_loop: EventLoop):
         is_active=is_active,
     )
 
-    user = event_loop.run_until_complete(crud.user.create_by_superuser(user_in))
+    async def func():
+        user = await crud.user.create_by_superuser(user_in)
+        return user
+
+    user = event_loop.run_until_complete(func())
     assert user.email == email
     assert hasattr(user, "password_hash")
     assert user.is_superuser == is_superuser
     assert user.is_active == is_active
-
-
-def test_user_get_by_email(client: TestClient, event_loop: EventLoop):
-    email = random_email()
-    password = random_lower_string()
-    user_in = UserCreateMe(email=email, password=password)
-    user = event_loop.run_until_complete(crud.user.create_me(user_in))
-    user_2 = event_loop.run_until_complete(crud.user.get_by_email(email))
-
-    assert user_2
-    assert UserPydantic.from_orm(user) == UserPydantic.from_orm(user_2)
 
 
 def test_user_update_me(client: TestClient, event_loop: EventLoop):
@@ -64,3 +61,48 @@ def test_user_update_me(client: TestClient, event_loop: EventLoop):
     assert updated_user.name == name
     assert updated_user.family_name == family_name
     assert verify_password(new_password, updated_user.password_hash)
+
+
+def test_user_update_by_superuser(client: TestClient, event_loop: EventLoop):
+    email = random_email()
+    password = random_lower_string()
+    user_in = UserCreateMe(email=email, password=password)
+    user = event_loop.run_until_complete(crud.user.create_me(user_in))
+
+    name = random_lower_string()
+    family_name = random_lower_string()
+    new_password = random_lower_string()
+    new_is_superuser = True
+    new_is_active = False
+
+    user_in = UserUpdateBySuperuser(
+        name=name,
+        family_name=family_name,
+        password=new_password,
+        is_active=new_is_active,
+        is_superuser=new_is_superuser,
+    )
+    updated_user = event_loop.run_until_complete(
+        crud.user.update_by_superuser(user, user_in)
+    )
+    assert updated_user.name == name
+    assert updated_user.family_name == family_name
+    assert verify_password(new_password, updated_user.password_hash)
+    assert updated_user.is_active == new_is_active
+    assert updated_user.is_superuser == new_is_superuser
+
+
+def test_user_authenticate(client: TestClient, event_loop: EventLoop):
+    email = random_email()
+    password = random_lower_string()
+    user_in = UserCreateMe(email=email, password=password)
+    user = event_loop.run_until_complete(crud.user.create_me(user_in))
+    assert verify_password(password, user.password_hash)
+
+
+def test_user_is_active_not(client: TestClient, event_loop: EventLoop):
+    email = random_email()
+    password = random_lower_string()
+    user_in = UserCreateMe(email=email, password=password)
+    user = event_loop.run_until_complete(crud.user.create_me(user_in))
+    assert user.is_active == True
