@@ -30,6 +30,7 @@ class CRUDUser(CRUDBase[User, UserCreateMe, UserUpdateMe]):
             email=obj_in.email,
             password_hash=get_password_hash(obj_in.password),
             is_superuser=obj_in.is_superuser,
+            is_active=obj_in.is_active,
         )
         return db_obj
 
