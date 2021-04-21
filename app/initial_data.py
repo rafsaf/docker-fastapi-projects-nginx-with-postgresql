@@ -1,9 +1,9 @@
 import logging
-import asyncio
+from tortoise import run_async
+from tortoise import Tortoise
 
 try:
     from app.db.init_db import init_db
-    from app.db.session import SessionLocal
     from app.core.config import settings
 except ModuleNotFoundError:
     import sys
@@ -13,7 +13,6 @@ except ModuleNotFoundError:
     app = pathlib.Path(os.path.dirname(__file__)).parent
     sys.path.append(str(app))
     from app.db.init_db import init_db
-    from app.db.session import SessionLocal
     from app.core.config import settings
 
 
@@ -28,4 +27,4 @@ async def main() -> None:
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    run_async(main())
