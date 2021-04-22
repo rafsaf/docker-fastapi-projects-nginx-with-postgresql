@@ -3,11 +3,21 @@ from app.core.config import settings
 from app import crud
 from tortoise import Tortoise
 
+TORTOISE_ORM = {
+    "connections": {"default": settings.TORTOISE_ALCHEMY_DATABASE_URI},
+    "apps": {
+        "models": {
+            "models": ["app.models", "aerich.models"],
+            "default_connection": "default",
+        },
+    },
+}
+
 
 async def init_db():
     await Tortoise.init(
         db_url=settings.TORTOISE_ALCHEMY_DATABASE_URI,
-        modules={"models": ["app.models"]},
+        modules={"models": ["app.models", "aerich.models"]},
     )
     # Generate the schema
     await Tortoise.generate_schemas()

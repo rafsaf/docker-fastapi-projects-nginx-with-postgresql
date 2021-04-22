@@ -19,6 +19,7 @@ class User(Model):
     modified_at = fields.DatetimeField(auto_now=True)
     is_active = fields.BooleanField(default=True)
     is_superuser = fields.BooleanField(default=False)
+    char = fields.CharField(max_length=50)
 
     def full_name(self) -> str:
         """
