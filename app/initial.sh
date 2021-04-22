@@ -1,4 +1,6 @@
-python -m pytest /build/app/tests
+cd build
 
-python /build/app/initial_data.py
+python -m pytest app/tests
+
+python app/initial_data.py
 

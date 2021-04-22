@@ -24,6 +24,7 @@ RUN mkdir build
 WORKDIR /build
 
 COPY ./app ./app
+COPY ./pytest.ini .
 COPY ./requirements.txt .
 COPY ./.env .
 

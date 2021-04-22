@@ -19,8 +19,8 @@ class Settings(BaseSettings):
     POSTGRES_SERVER: str = "localhost"
     POSTGRES_PORT: str = "5432"
     POSTGRES_DB: str = "db"
-    SQLALCHEMY_DATABASE_URI: Optional[str] = None  # "sqlite://db.sqlite3"
-    # set it to None to stop using sqlite and calculate uri from postgres data
+    TORTOISE_ALCHEMY_DATABASE_URI: Optional[str] = None  # "sqlite://db.sqlite3"
+    # set it to None if you do not use sqlite and calculate uri from postgres data
     # (see URI validator) -> postgresql://user:password@localhost:5432/db etc.
 
     # FIRST SUPERUSER
@@ -37,7 +37,7 @@ class Settings(BaseSettings):
             return [item.strip() for item in cors_origins.split(",")]
         return cors_origins
 
-    @validator("SQLALCHEMY_DATABASE_URI", pre=True)
+    @validator("TORTOISE_ALCHEMY_DATABASE_URI", pre=True)
     def _assemble_db_connection(cls, v: Optional[str], values: Dict[str, str]) -> str:
         if isinstance(v, str):
             return v
