@@ -19,7 +19,7 @@ async def drop() -> None:
     await User.all().delete()
 
 
-def test_user_create_me(client: TestClient, event_loop: EventLoop, drop):
+def test_user_create_me(client: TestClient, event_loop: EventLoop):
     email = random_email()
     password = random_lower_string()
     user_in = UserCreateMe(email=email, password=password)

@@ -8,7 +8,9 @@ from app.core.config import settings
 
 def create_app() -> FastAPI:
     app = FastAPI(
-        title=settings.PROJECT_NAME, openapi_url=f"{settings.API_STR}/openapi.json"
+        title=settings.PROJECT_NAME,
+        openapi_url=f"/openapi.json",
+        docs_url="/",
     )
     # Set all CORS enabled origins
     if settings.BACKEND_CORS_ORIGINS:
@@ -28,7 +30,7 @@ app = create_app()
 
 register_tortoise(
     app=app,
-    db_url=settings.TORTOISE_ALCHEMY_DATABASE_URI,
+    db_url=settings.TORTOISE_DATABASE_URI,
     modules={"models": ["app.models"]},
     add_exception_handlers=True,
 )

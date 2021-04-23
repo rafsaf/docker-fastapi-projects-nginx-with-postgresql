@@ -19,16 +19,13 @@ class Settings(BaseSettings):
     POSTGRES_SERVER: str = "localhost"
     POSTGRES_PORT: str = "5432"
     POSTGRES_DB: str = "db"
-    TORTOISE_ALCHEMY_DATABASE_URI: Optional[str] = "sqlite://db.sqlite3"
+    TORTOISE_DATABASE_URI: Optional[str] = None
     # set it to None if you do not use sqlite and calculate uri from postgres data
     # (see URI validator) -> postgresql://user:password@localhost:5432/db etc.
 
     # FIRST SUPERUSER
     FIRST_SUPERUSER_EMAIL: EmailStr = "example@example.com"  # type: ignore
     FIRST_SUPERUSER_PASSWORD: str = "my_secret_password"
-
-    # TESTING
-    EMAIL_TEST_USER: EmailStr = "test@example.com"  # type: ignore
 
     # VALIDATORS
     @validator("BACKEND_CORS_ORIGINS", pre=True)
@@ -37,7 +34,7 @@ class Settings(BaseSettings):
             return [item.strip() for item in cors_origins.split(",")]
         return cors_origins
 
-    @validator("TORTOISE_ALCHEMY_DATABASE_URI", pre=True)
+    @validator("TORTOISE_DATABASE_URI", pre=True)
     def _assemble_db_connection(cls, v: Optional[str], values: Dict[str, str]) -> str:
         if isinstance(v, str):
             return v
@@ -59,7 +56,7 @@ settings: Settings = Settings()
 
 
 TORTOISE_ORM = {
-    "connections": {"default": settings.TORTOISE_ALCHEMY_DATABASE_URI},
+    "connections": {"default": settings.TORTOISE_DATABASE_URI},
     "apps": {
         "models": {
             "models": ["app.models", "aerich.models"],

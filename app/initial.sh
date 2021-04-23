@@ -2,5 +2,6 @@ cd build
 
 python -m pytest app/tests
 
-python app/initial_data.py
+aerich upgrade
 
+python app/initial_data.py

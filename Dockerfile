@@ -25,6 +25,7 @@ WORKDIR /build
 
 COPY ./app ./app
 COPY ./pytest.ini .
+COPY ./aerich.ini .
 COPY ./requirements.txt .
 COPY ./.env .
 
