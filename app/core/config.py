@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     API_STR: str = ""
     BACKEND_CORS_ORIGINS: Union[
         str, List[AnyHttpUrl]
-    ] = "http://localhost:3000,http://localhost:8000"
+    ] = "http://localhost:3000,http://localhost:8001"
 
     POSTGRES_USER: str = "postgres"
     POSTGRES_PASSWORD: str = "super_secret_db_password"
@@ -20,8 +20,7 @@ class Settings(BaseSettings):
     POSTGRES_PORT: str = "5432"
     POSTGRES_DB: str = "db"
     TORTOISE_DATABASE_URI: Optional[str] = None
-    # set it to None if you do not use sqlite and calculate uri from postgres data
-    # (see URI validator) -> postgresql://user:password@localhost:5432/db etc.
+    # (see URI validator) -> it will be like postgresql://user:password@localhost:5432/db
 
     # FIRST SUPERUSER
     FIRST_SUPERUSER_EMAIL: EmailStr = "example@example.com"  # type: ignore
